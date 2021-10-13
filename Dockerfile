@@ -11,7 +11,7 @@ ENV AWS_ACCESS_KEY_ID="" \
     PGP_KEY="" \
     PGP_KEYSERVER="hkps://keys.gnupg.net,hkps://pgp.mit.edu,hkps://keyserver.ubuntu.com,hkps://peegeepee.com,hkp://keys.gnupg.net,hkp://pgp.mit.edu,hkp://keyserver.ubuntu.com,hkp://pool.sks-keyservers.net"
 
-#   MYSQL_HOST MYSQL_ROOT_PASSWORD MYSQL_USER MYSQL_PASSWORD MYSQL_DATABASE
+#   MYSQL_HOST MYSQL_ROOT_PASSWORD MYSQL_USER MYSQL_PASSWORD MYSQL_DATABASE MYSQLDUMP_ADDITIONAL_OPTS
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

@@ -16,6 +16,7 @@ This docker image backup and encrypt MySQL databases to S3/Minio periodically.
            -e MYSQL_HOST=your-mysql-container \
            -e MYSQL_USER=your-mysql-username \
            -e MYSQL_PASSWORD="your-mysql-password" \
+           -e MYSQLDUMP_ADDITIONAL_OPTS="--quick --single-transaction --add-drop-database --add-drop-table --comments --net_buffer_length=16384" \
            --network your-network \
            chaifeng/mysql-backup-s3-gpg
 
@@ -32,6 +33,7 @@ This docker image backup and encrypt MySQL databases to S3/Minio periodically.
            -e MYSQL_HOST=your-mysql-container \
            -e MYSQL_USER=root \
            -e MYSQL_PASSWORD="your-mysql-password" \
+           -e MYSQLDUMP_ADDITIONAL_OPTS="--quick --single-transaction --add-drop-database --add-drop-table --comments --net_buffer_length=16384" \
            --network your-network \
            chaifeng/mysql-backup-s3-gpg
 
@@ -49,6 +51,7 @@ This docker image backup and encrypt MySQL databases to S3/Minio periodically.
            -e MYSQL_HOST=your-mysql-container \
            -e MYSQL_USER=root \
            -e MYSQL_PASSWORD="your-mysql-password" \
+           -e MYSQLDUMP_ADDITIONAL_OPTS="--quick --single-transaction --add-drop-database --add-drop-table --comments --net_buffer_length=16384" \
            --network your-network \
            chaifeng/mysql-backup-s3-gpg
 
@@ -64,6 +67,7 @@ This docker image backup and encrypt MySQL databases to S3/Minio periodically.
            -e MYSQL_HOST=your-mysql-container \
            -e MYSQL_USER=your-mysql-username \
            -e MYSQL_PASSWORD="your-mysql-password" \
+           -e MYSQLDUMP_ADDITIONAL_OPTS="--quick --single-transaction --add-drop-database --add-drop-table --comments --net_buffer_length=16384" \
            --network your-network \
            chaifeng/mysql-backup-s3-gpg
 
@@ -103,6 +107,8 @@ This docker image backup and encrypt MySQL databases to S3/Minio periodically.
   the default value is `-%Y%m%d-%H%M.sql.gz.gpg`, please see the strftime(3) manual page
 - `MYSQL_DATABASE`
   the database name to dump. Default is to backup all databases
+- `MYSQLDUMP_ADDITIONAL_OPTS`
+  additional options to provide to the `mysqldump` command
 
 ## Decrypt
 
