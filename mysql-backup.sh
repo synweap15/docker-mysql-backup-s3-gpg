@@ -32,6 +32,26 @@ function s3() {
 mysqldump "${MYSQLDUMP_OPTS[@]}" \
     | gpg --encrypt -r "${PGP_KEY}" --compress-algo zlib --quiet \
     | s3 cp - "s3://${S3_FILENAME}" \
-    || s3 rm "s3://${S3_FILENAME}"
+    || (s3 rm "s3://${S3_FILENAME}";  $(exit 1))
 
-echo "$S3_FILENAME"
+E_CODE=$?
+
+if [[ "$E_CODE" -eq 0 ]]; then
+  STATUS="SUCCESS"
+else
+  STATUS="FAIL"
+fi
+
+REPORT="[$STATUS] MySQL backup of $MYSQL_DATABASE to $S3_FILENAME, exit code: $E_CODE"
+echo "$REPORT"
+
+SEND_MAIL_SCRIPT="${BASH_SOURCE%/*}/send-mail.sh"
+if [[ "$E_CODE" -eq 0 ]]; then
+  # send mail success
+  exec "$SEND_MAIL_SCRIPT" -t "$MAIL_TO" -s "[SLAVE] Backup of $MYSQL_DATABASE successful" -o "$REPORT"
+else
+  # send mail fail
+  exec "$SEND_MAIL_SCRIPT" -t "$MAIL_TO" -s "[SLAVE] Backup of $MYSQL_DATABASE error" -o "$REPORT"
+fi
+
+echo "Notification email sent"
