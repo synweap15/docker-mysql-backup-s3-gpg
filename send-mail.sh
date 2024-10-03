@@ -19,7 +19,7 @@
 #		-o '<p>Email body goes here</p>'
 #		-a '/tmp/test.sh,/tmp/test2.sh'
 
-# Your Sendgrid API Key
+set -eu -o pipefail
 
 # Get the arguments
 while getopts t:c:b:s:o:a: flag
@@ -94,7 +94,7 @@ then
 	sendGridJson="${sendGridJson} ]"
 fi
 
-sendGridJson="${sendGridJson} }],\"from\": {\"email\": \"${FROM_EMAIL}\"},\"subject\":\"${subject}\",\"content\": [{\"type\": \"text/html\",\"value\": \"${body}\"}],"
+sendGridJson="${sendGridJson} }],\"from\": {\"email\": \"${MAIL_FROM}\"},\"subject\":\"${subject}\",\"content\": [{\"type\": \"text/html\",\"value\": \"${body}\"}],"
 
 if [ ${#attachments_array[@]} != 0 ]
 then
