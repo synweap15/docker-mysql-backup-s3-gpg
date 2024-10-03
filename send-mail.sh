@@ -19,8 +19,6 @@
 #		-o '<p>Email body goes here</p>'
 #		-a '/tmp/test.sh,/tmp/test2.sh'
 
-set -eu -o pipefail
-
 # Get the arguments
 while getopts t:c:b:s:o:a: flag
 do
