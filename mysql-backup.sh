@@ -48,10 +48,10 @@ echo "$REPORT"
 SEND_MAIL_SCRIPT="${BASH_SOURCE%/*}/send-mail.sh"
 if [[ "$E_CODE" -eq 0 ]]; then
   # send mail success
-  exec "$SEND_MAIL_SCRIPT" -t '"$MAIL_TO"' -s '[SLAVE] Backup of "$MYSQL_DATABASE" successful"' -o '"$REPORT"'
+  exec "$SEND_MAIL_SCRIPT" -t \'"$MAIL_TO"\' -s \'[SLAVE] Backup of "$MYSQL_DATABASE" successful\' -o \'"$REPORT"\'
 else
   # send mail fail
-  exec "$SEND_MAIL_SCRIPT" -t '"$MAIL_TO"' -s '"[SLAVE] Backup of $MYSQL_DATABASE error"' -o '"$REPORT"'
+  exec "$SEND_MAIL_SCRIPT" -t \'"$MAIL_TO"\' -s \'"[SLAVE] Backup of $MYSQL_DATABASE error"\' -o \'"$REPORT"\'
 fi
 
 echo "Notification email sent"
