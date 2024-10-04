@@ -51,5 +51,5 @@ if [[ "$E_CODE" -eq 0 ]]; then
   exec "$SEND_MAIL_SCRIPT" -t \'"${MAIL_TO}"\' -s \'[SLAVE] Backup of "${MYSQL_DATABASE}" successful\' -o \'"${REPORT}"\' && echo "Notification email sent" || echo "Notification email error"
 else
   # send mail fail
-  exec "$SEND_MAIL_SCRIPT" -t \'"${MAIL_TO}"\' -s \'"[SLAVE] Backup of ${MYSQL_DATABASE} error"\' -o \'"${REPORT}"\' && echo "Notification email sent" || echo "Notification email error"
+  exec "$SEND_MAIL_SCRIPT" -t \'"${MAIL_TO}"\' -s \'[SLAVE] Backup of "${MYSQL_DATABASE}" error\' -o \'"${REPORT}"\' && echo "Notification email sent" || echo "Notification email error"
 fi
