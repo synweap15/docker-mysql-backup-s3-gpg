@@ -92,7 +92,7 @@ then
 	sendGridJson="${sendGridJson} ]"
 fi
 
-sendGridJson="${sendGridJson} }],\"from\": {\"email\": \"${MAIL_FROM}\"},\"subject\":\"${subject}\",\"content\": [{\"type\": \"text/html\",\"value\": \"${body}\"}],"
+sendGridJson="${sendGridJson} }],\"from\": {\"email\": \"${MAIL_FROM}\"},\"subject\":\"${SUBJECT}\",\"content\": [{\"type\": \"text/html\",\"value\": \"${BODY}\"}],"
 
 if [ ${#attachments_array[@]} != 0 ]
 then

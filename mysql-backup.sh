@@ -38,18 +38,16 @@ E_CODE=$?
 
 if [[ "$E_CODE" -eq 0 ]]; then
   STATUS="SUCCESS"
+  SUBJECT="[SLAVE] Backup of $MYSQL_DATABASE successful"
 else
   STATUS="FAIL"
+  SUBJECT="[SLAVE] Backup of $MYSQL_DATABASE error"
 fi
 
-REPORT="[$STATUS] MySQL backup of $MYSQL_DATABASE to $S3_FILENAME, exit code: $E_CODE"
-echo "$REPORT"
+BODY="[$STATUS] MySQL backup of $MYSQL_DATABASE to $S3_FILENAME, exit code: $E_CODE"
+echo "$SUBJECT"
+echo "$BODY"
+
 
 SEND_MAIL_SCRIPT="${BASH_SOURCE%/*}/send-mail.sh"
-if [[ "$E_CODE" -eq 0 ]]; then
-  # send mail success
-  exec "$SEND_MAIL_SCRIPT" -t \'"${MAIL_TO}"\' -s \'[SLAVE] Backup of "${MYSQL_DATABASE}" successful\' -o \'"${REPORT}"\' && echo "Notification email sent" || echo "Notification email error"
-else
-  # send mail fail
-  exec "$SEND_MAIL_SCRIPT" -t \'"${MAIL_TO}"\' -s \'[SLAVE] Backup of "${MYSQL_DATABASE}" error\' -o \'"${REPORT}"\' && echo "Notification email sent" || echo "Notification email error"
-fi
+exec "$SEND_MAIL_SCRIPT" && echo "Notification email sent" || echo "Notification email error"
