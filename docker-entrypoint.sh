@@ -80,7 +80,7 @@ gpg --update-trustdb --trusted-key "${PGP_KEY}"
 
 export -p | grep '\(AWS\|BACKUP\|PGP\|MYSQL\|DEBUG\|TZ\)' > /etc/profile.d/s3.sh
 
-echo "${BACKUP_SCHEDULE} root $BACKUP_SCRIPT >/dev/null" | /usr/bin/tee /etc/cron.d/backup
+echo "${BACKUP_SCHEDULE} root $BACKUP_SCRIPT" | /usr/bin/tee /etc/cron.d/backup
 
 case "$1" in
     cron)
