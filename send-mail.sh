@@ -120,7 +120,7 @@ sendGridJson="${sendGridJson} }"
 
 #Generate a Random File to hole the POST data
 tfile=$(mktemp /tmp/sendgrid.XXXXXXXXX)
-echo $sendGridJson > $tfile
+echo $sendGridJson | /usr/bin/tee $tfile
 
 # Send the http request to SendGrid
 curl --request POST \
