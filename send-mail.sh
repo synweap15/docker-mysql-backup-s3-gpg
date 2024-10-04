@@ -1,130 +1,124 @@
 #!/bin/bash
-# Author: Amith Chandrappa
 
-# Usage
-# Options:
-# 	-t: To Emails, Separated by ","
-# 	-c: CC Emails, Separated by ","
-# 	-b: BCC Emails, Separated by ","
-# 	-s: Subject
-# 	-o: Email body
-# 	-a: Attachment Files, Separated by ","
-#
-#	Example:
-#	sh sendEmail.sh
-#		-t 'to1@gmail.com,to2@gmail.com'
-#		-c 'cc1@gmail.com,cc2@gmail.com'
-#		-b 'bcc1@gmail.com,bcc2@gmail.com'
-#		-s 'FINAL SCRIPT'
-#		-o '<p>Email body goes here</p>'
-#		-a '/tmp/test.sh,/tmp/test2.sh'
+# Enable debug mode if DEBUG environment variable is set
+[[ -n "${DEBUG:-}" ]] && set -x
+
+# Usage info
+usage() {
+  echo "Usage: $0 [-t to_emails] [-c cc_emails] [-b bcc_emails] [-s subject] [-o body] [-a attachments]" 1>&2
+  exit 1
+}
+
+# Initialize variables
+to=""
+cc=""
+bcc=""
+subject=""
+body=""
+attachments=""
 
 # Get the arguments
-while getopts t:c:b:s:o:a: flag
-do
+while getopts "t:c:b:s:o:a:" flag; do
     case "${flag}" in
-        t) to=${OPTARG};;
-        c) cc=${OPTARG};;
-        b) bcc=${OPTARG};;
-		s) subject=${OPTARG};;
-		o) body=${OPTARG};;
-		a) attachments=${OPTARG};;
+        t) to=${OPTARG} ;;
+        c) cc=${OPTARG} ;;
+        b) bcc=${OPTARG} ;;
+        s) subject=${OPTARG} ;;
+        o) body=${OPTARG} ;;
+        a) attachments=${OPTARG} ;;
+        *) usage ;;
     esac
 done
 
+# Basic validation
+[[ -z "$to" ]] && { echo "Error: 'to' email is required"; usage; }
+[[ -z "$subject" ]] && { echo "Error: 'subject' is required"; usage; }
+[[ -z "$body" ]] && { echo "Error: 'body' is required"; usage; }
 
-# Start building the JSON
-sendGridJson="{\"personalizations\": [{";
+# Construct 'to', 'cc', 'bcc' JSON arrays
+construct_email_array() {
+  local emails="$1"
+  local json_array=""
 
-# Convert the String to Array, with the delimiter as ","
-IFS=', ' read -r -a to_array <<< "$to"
-IFS=', ' read -r -a cc_array <<< "$cc"
-IFS=', ' read -r -a bcc_array <<< "$bcc"
-IFS=', ' read -r -a attachments_array <<< "$attachments"
+  IFS=',' read -r -a email_array <<< "$emails"
+  for email in "${email_array[@]}"; do
+      email=$(echo "$email" | xargs)  # Trim spaces
+      json_array+="{\"email\": \"$email\"},"
+  done
 
+  json_array="${json_array%,}"  # Remove trailing comma
+  echo "$json_array"
+}
 
-if [ ${#to_array[@]} != 0 ]
-then
-	sendGridJson="${sendGridJson} \"to\": ["
-
-	for email in "${to_array[@]}"
-	do
-	    sendGridJson="${sendGridJson} {\"email\": \"$email\"},"
-	done
-
-	sendGridJson=`echo ${sendGridJson} | sed 's/.$//'`
-	sendGridJson="${sendGridJson} ],"
-
-	if [ ${#cc_array[@]} == 0 ] && [ ${#bcc_array[@]} == 0 ]
-	then
-		sendGridJson=`echo ${sendGridJson} | sed 's/.$//'`
-	fi
+# Generate 'to', 'cc', 'bcc' arrays
+to_json=$(construct_email_array "$to")
+cc_json=""
+if [[ -n "$cc" ]]; then
+  cc_json=", \"cc\": ["$(construct_email_array "$cc")"]"
+fi
+bcc_json=""
+if [[ -n "$bcc" ]]; then
+  bcc_json=", \"bcc\": ["$(construct_email_array "$bcc")"]"
 fi
 
-if [ ${#cc_array[@]} != 0 ]
-then
-	sendGridJson="${sendGridJson} \"cc\": ["
-
-	for email in "${cc_array[@]}"
-	do
-	    sendGridJson="${sendGridJson} {\"email\": \"$email\"},"
-	done
-
-	sendGridJson=`echo ${sendGridJson} | sed 's/.$//'`
-	sendGridJson="${sendGridJson} ],"
-
-	if [ ${#bcc_array[@]} == 0 ]
-	then
-		sendGridJson=`echo ${sendGridJson} | sed 's/.$//'`
-	fi
+# Construct attachments array if provided
+attachments_json=""
+if [[ -n "$attachments" ]]; then
+  attachments_json="\"attachments\": ["
+  IFS=',' read -r -a attachments_array <<< "$attachments"
+  for attachment in "${attachments_array[@]}"; do
+      base64_content=$(base64 -w 0 "$attachment")
+      filename=$(basename "$attachment")
+      mime_type=$(file --mime-type -b "$attachment")
+      attachments_json+="{\"content\": \"$base64_content\", \"type\": \"$mime_type\", \"filename\": \"$filename\"},"
+  done
+  attachments_json="${attachments_json%,}]"  # Remove trailing comma and close array
 fi
 
-if [ ${#bcc_array[@]} != 0 ]
-then
-	sendGridJson="${sendGridJson} \"bcc\": ["
-
-	for email in "${bcc_array[@]}"
-	do
-	    sendGridJson="${sendGridJson} {\"email\": \"$email\"},"
-	done
-
-	sendGridJson=`echo ${sendGridJson} | sed 's/.$//'`
-	sendGridJson="${sendGridJson} ]"
+# Validate 'from' and API key
+if [[ -z "$MAIL_FROM" ]]; then
+  echo "Error: MAIL_FROM environment variable not set."
+  exit 1
+fi
+if [[ -z "$SENDGRID_API_KEY" ]]; then
+  echo "Error: SENDGRID_API_KEY environment variable not set."
+  exit 1
 fi
 
-sendGridJson="${sendGridJson} }],\"from\": {\"email\": \"${MAIL_FROM}\"},\"subject\":\"${SUBJECT}\",\"content\": [{\"type\": \"text/html\",\"value\": \"${BODY}\"}],"
+# Generate final JSON
+sendGridJson="{\"personalizations\": [{\"to\": [${to_json}], \"subject\": \"$subject\"${cc_json}${bcc_json}}], \"from\": {\"email\": \"$MAIL_FROM\"}, \"content\": [{\"type\": \"text/html\", \"value\": \"$body\"}]"
 
-if [ ${#attachments_array[@]} != 0 ]
-then
-	sendGridJson="${sendGridJson} \"attachments\": ["
-
-	for attachment in "${attachments_array[@]}"
-
-	# Converting the File Content to Base64
-	# For OSX use base64 <fileName>
-	# For linux use base64 -w 0 <fileName>
-
-	do
-		base64_content=$(base64 -w 0${attachment})
-		fileName="$(basename $attachment)"
-	    sendGridJson="${sendGridJson} {\"content\": \"${base64_content}\",\"type\": \"text/plain\",\"filename\": \"${fileName}\"},"
-	done
-
-	sendGridJson=`echo ${sendGridJson} | sed 's/.$//'`
-	sendGridJson="${sendGridJson} ]"
-else
-	sendGridJson=`echo ${sendGridJson} | sed 's/.$//'`
+# Add attachments to JSON if any
+if [[ -n "$attachments_json" ]]; then
+  sendGridJson+=", $attachments_json"
 fi
 
-sendGridJson="${sendGridJson} }"
+sendGridJson+="}"  # Close the JSON object
 
-#Generate a Random File to hole the POST data
+# Output JSON for debugging
+echo "sendGridJson = $sendGridJson"
+
+# Save JSON to a temporary file
 tfile=$(mktemp /tmp/sendgrid.XXXXXXXXX)
-echo $sendGridJson | /usr/bin/tee $tfile
+echo "$sendGridJson" > "$tfile"
 
-# Send the http request to SendGrid
-curl --request POST \
+# Send the HTTP request to SendGrid
+response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --request POST \
   --url https://api.sendgrid.com/v3/mail/send \
-  --header 'Authorization: Bearer '$SENDGRID_API_KEY \
-  --header 'Content-Type: application/json' \
-  --data @$tfile
+  --header "Authorization: Bearer $SENDGRID_API_KEY" \
+  --header "Content-Type: application/json" \
+  --data @"$tfile")
+
+# Cleanup temporary file
+rm "$tfile"
+
+# Extract the response status
+http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+
+# Check HTTP status code
+if [[ "$http_status" -ne 202 ]]; then
+  echo "Error: Failed to send email. Status code: $http_status"
+  exit 1
+fi
+
+echo "Email sent successfully."
