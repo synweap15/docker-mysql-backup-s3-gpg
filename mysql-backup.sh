@@ -52,7 +52,7 @@ echo "$BODY"
 
 # Send notification email
 SEND_MAIL_SCRIPT="${BASH_SOURCE%/*}/send-mail.sh"
-if "${SEND_MAIL_SCRIPT}" -t "${MAIL_TO}" -s "${SUBJECT}" -o "${BODY}"; then
+if "${SEND_MAIL_SCRIPT}" -t "$MAIL_TO" -s "$SUBJECT" -o "$BODY"; then
     echo "Notification email sent"
 else
     echo "Notification email error"
