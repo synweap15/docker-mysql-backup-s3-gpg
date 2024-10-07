@@ -84,7 +84,7 @@ echo "${BACKUP_SCHEDULE} root $BACKUP_SCRIPT 2>/proc/1/fd/2 | tee -a /proc/1/fd/
 
 case "$1" in
     cron)
-        echo "Backing up ${MYSQL_DATABASE:-all databases} at '${BACKUP_SCHEDULE}' ..."
+        echo "Backing up ${MYSQL_DATABASE:-all databases} at '${BACKUP_SCHEDULE}' and sending notifications to ${MAIL_TO}..."
         exec /usr/sbin/cron -f -L 15
         ;;
     backup)
