@@ -72,7 +72,7 @@ function receive_gpg_key() {
 
 while ! gpg --list-key "${PGP_KEY}"; do
     receive_gpg_key "${PGP_KEY}" && break;
-    echo "Error in retreiving PGP key ${PGP_KEY} from ${PGP_KEYSERVER}, retry in 5 seconds ..."
+    echo "Error in retrieving PGP key ${PGP_KEY} from ${PGP_KEYSERVER}, retry in 5 seconds ..."
     sleep 5
 done
 

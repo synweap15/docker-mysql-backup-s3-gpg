@@ -89,6 +89,12 @@ This docker image backup and encrypt MySQL databases to S3/Minio periodically.
   the password of your mysql database
 - `MYSQL_ROOT_PASSWORD`
   the root's password of your mysql database
+- `SENDGRID_API_KEY`
+  API key for Sendgrid - email notifications
+- `MAIL_FROM`
+  Mail from variable for Sendgrid email notifications
+- `MAIL_TO`
+  Mail to variable for Sendgrid email notifications
 
 ### Optional variables
 - `AWS_DEFAULT_REGION`
